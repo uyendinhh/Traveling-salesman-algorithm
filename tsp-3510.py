@@ -99,12 +99,13 @@ class TSP:
         with open(output_file_name, 'a') as f:
             f.write('Path: ' + str(best_path))       
             f.write(', Cost: ' + str(best_cost) + '\n')
+        print('final cost', best_cost)
 
     def path_after_swapping_edges(self, cur_path):
         a, b, c, d = random.sample(range(0, len(self.nodes)), 4)
         new_path = copy.deepcopy(cur_path)
         # swap 2 edges randomly
-        new_path[a], new_path[b], new_path[c], new_path[d] = new_path[d], new_path[c], new_path[b], new_path[a]  
+        new_path[a], new_path[b], new_path[c], new_path[d] = new_path[d], new_path[c], new_path[b], new_path[a]
         return self.two_opt(new_path)
             
     def calculate_path_cost(self, path):
