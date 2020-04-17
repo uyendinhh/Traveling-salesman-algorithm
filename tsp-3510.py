@@ -57,8 +57,10 @@ class TSP:
     
     def run(self):
         if (len(sys.argv) < 3):
+            print('Arguments should contain: <input-file-nam> <output-file-name> <time>')
             return
-        # read data in the given file 
+
+        # read data from the given file 
         input_file_name = sys.argv[1]
         output_file_name = sys.argv[2]
         time_limit = sys.argv[3]
@@ -80,23 +82,25 @@ class TSP:
         best_path, best_cost = self.two_opt(initial_path)
  
         while time.time() < self.timeout:
-            better_path, better_cost = self.swap_edges(best_path)
+            better_path, better_cost = self.path_after_swapping_edges(best_path)
             if best_cost == better_cost:
                 break
             if better_cost < best_cost:
                 best_path = better_path
                 best_cost = better_cost
 
-        # since the first node starts at 1, increase 1 to convert the node back its original form
+        # since the first node starts at 1, increase 1 to every node to convert the nodes back their original form
         for i in range(n):
             best_path[i] += 1
 
+        best_path.append(best_path[0])
+
+        # save the path and its cost to a text file
         with open(output_file_name, 'a') as f:
             f.write('Path: ' + str(best_path))       
             f.write(', Cost: ' + str(best_cost) + '\n')
-        print('final_cost', best_cost)
 
-    def swap_edges(self, cur_path):
+    def path_after_swapping_edges(self, cur_path):
         a, b, c, d = random.sample(range(0, len(self.nodes)), 4)
         new_path = copy.deepcopy(cur_path)
         # swap 2 edges randomly
