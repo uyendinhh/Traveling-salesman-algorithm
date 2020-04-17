@@ -40,14 +40,18 @@ class TSP:
             unvisited_neighbors = list(set(unvisited_neighbors).difference(visited_neighbors))
             number_of_unvisited_neighbors = len(unvisited_neighbors) 
             last_visited_node = visited_neighbors[-1]
-            
+
             # get the first, second, or third closest neighbor of the last visited node randomly
-            probability = (number_of_unvisited_neighbors - 1) if number_of_unvisited_neighbors < 5 else random.randint(1, 1)
+            probability = (number_of_unvisited_neighbors - 1) if number_of_unvisited_neighbors < 5 else random.randint(1, 4)
             next_neighbor_to_visit = sorted_cost_matrix[last_visited_node][probability]
+
+            # if the next node to visit has already been visited, find another node
             if next_neighbor_to_visit in visited_neighbors and number_of_unvisited_neighbors:
                 random_neighbor_idx = random.randint(0, number_of_unvisited_neighbors - 1) if number_of_unvisited_neighbors > 1 else 0
-                next_neighbor_to_visit = unvisited_neighbors[random_neighbor_idx] 
+                next_neighbor_to_visit = unvisited_neighbors[random_neighbor_idx]
+
             visited_neighbors.append(next_neighbor_to_visit)
+
         return visited_neighbors
             
     
@@ -69,10 +73,12 @@ class TSP:
                     node = Node(int(vertex), float(x), float(y))
                     self.nodes.append(node)
 
-        self.generate_node_distances()
         n = len(self.nodes)
+        self.generate_node_distances()
+
         initial_path = self.generate_initial_path()
-        best_path, best_cost = self.two_opt(initial_path, self.node_distances) 
+        best_path, best_cost = self.two_opt(initial_path)
+ 
         while time.time() < self.timeout:
             better_path, better_cost = self.swap_edges(best_path)
             if best_cost == better_cost:
@@ -80,8 +86,11 @@ class TSP:
             if better_cost < best_cost:
                 best_path = better_path
                 best_cost = better_cost
+
+        # since the first node starts at 1, increase 1 to convert the node back its original form
         for i in range(n):
-            best_path[i] -= 1
+            best_path[i] += 1
+
         with open(output_file_name, 'a') as f:
             f.write('Path: ' + str(best_path))       
             f.write(', Cost: ' + str(best_cost) + '\n')
@@ -92,7 +101,7 @@ class TSP:
         new_path = copy.deepcopy(cur_path)
         # swap 2 edges randomly
         new_path[a], new_path[b], new_path[c], new_path[d] = new_path[d], new_path[c], new_path[b], new_path[a]  
-        return self.two_opt(new_path, self.node_distances)
+        return self.two_opt(new_path)
             
     def calculate_path_cost(self, path):
         n = len(self.nodes)
@@ -103,27 +112,30 @@ class TSP:
         total_cost += cost[path[n-1]][path[0]]
         return total_cost
 
-    def cost_change(self, cost_mat, n1, n2, n3, n4):
-        return cost_mat[n1][n3] + cost_mat[n2][n4] - cost_mat[n1][n2] - cost_mat[n3][n4]
+    def should_swap_edges(self, v1, v2, k1, k2):
+        old_edge1 = self.node_distances[v1][v2] 
+        old_edge2 = self.node_distances[k1][k2]
+
+        new_edge1 = self.node_distances[v1][k1]
+        new_edge2 = self.node_distances[v2][k2]
+
+        return (new_edge1 + new_edge2) < (old_edge1 + old_edge2)
 
 
-    def two_opt(self, route, cost_mat):
-        best = route
-        improved = True
-        old_cost = 0
-        while improved:
-            improved = False
-            for i in range(1, len(route) - 2):
-                for j in range(i + 1, len(route)):
+    def two_opt(self, cur_path):
+        best_path_found = False
+        while not best_path_found:
+            best_path_found = False
+            for i in range(1, len(cur_path) - 2):
+                for j in range(i + 1, len(cur_path)):
+                    if j - i == 1: continue
                     if time.time() > self.timeout:
                         break
-                    if j - i == 1: continue
-                    if self.cost_change(cost_mat, best[i - 1], best[i], best[j - 1], best[j]) < 0:
-                        best[i:j] = best[j - 1:i - 1:-1]
-                        improved = True
-            route = best
-        cost = self.calculate_path_cost(best)
-        return (best, cost)
+                    if self.should_swap_edges(cur_path[i - 1], cur_path[i], cur_path[j - 1], cur_path[j]):
+                        best_path_found = True
+                        cur_path[i], cur_path[j - 1]= cur_path[j-1], cur_path[i]
+        cost = self.calculate_path_cost(cur_path)
+        return (cur_path, cost)
     
 if __name__ == "__main__":
     TSP().run()
