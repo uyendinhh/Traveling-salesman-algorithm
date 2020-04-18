@@ -1,6 +1,6 @@
 TSP:
-    - First, generate a matrix containing the distance of the nodes 
-    - The idea is to generate an inital path and improve it using two-opt
+    - First, generate a matrix containing the distance of the nodes called node_distances 
+    - Then, generate an inital path and improve it using two-opt
     - The inital path is generated as follow:
         - Iterate through the entire node list:
             - Starts at a random node
@@ -10,11 +10,17 @@ TSP:
             pick an edge that neither side of its edge is next to v,
             If the two edges are crossing:
                 flatten them
+                keep flattening edges until no crossing edges are found
     - After improving the inital path, we will have the best path so far,
         The cost of the route mainly depends on the inital path,
-        if the time is not exceeding the limit time:
-            improve the best path so far by:
-                - pick two random edges, swap their position to see if it improves the 
-                current path
-                - if it does, improving it by calling two-opt again to straingten any crossing edges
+        If the algorithm found its best path (so far) before reaching the time limit:
+            Improve the best path so far by:
+                - use the current path and pick two random edges, swap their position to see if it improves the cost
+                - if it does, improve the path further by calling two-opt again to straingten any crossing edges
     - Return the path with lowest cost
+
+Runtime analysis:
+    - It will take O(n^2) to compute node_distances
+    - Generate inital path will take O(n * nlog(n))
+    - Improve the inital path will take O(n^2)
+    => It will take O(n^2)

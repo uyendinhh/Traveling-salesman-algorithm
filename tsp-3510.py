@@ -81,8 +81,11 @@ class TSP:
         initial_path = self.generate_initial_path()
         best_path, best_cost = self.two_opt(initial_path)
  
+        # If the algorithm finished its job before timeout, try to improve the current path
+        # by randomly swapped two edges, if it lessen the cost, process with that path
         while time.time() < self.timeout:
-            better_path, better_cost = self.path_after_swapping_edges(best_path)
+            swapped_edges_path = self.path_after_swapping_edges(best_path)
+            better_path, better_cost = self.two_opt(swapped_edges_path)
             if best_cost == better_cost:
                 break
             if better_cost < best_cost:
@@ -99,14 +102,15 @@ class TSP:
         with open(output_file_name, 'a') as f:
             f.write('Path: ' + str(best_path))       
             f.write(', Cost: ' + str(best_cost) + '\n')
-        print('final cost', best_cost)
+        print('Best path by Nearest neighbor 2-OPT', best_path)
+        print('Cost', best_cost)
 
     def path_after_swapping_edges(self, cur_path):
         a, b, c, d = random.sample(range(0, len(self.nodes)), 4)
         new_path = copy.deepcopy(cur_path)
         # swap 2 edges randomly
         new_path[a], new_path[b], new_path[c], new_path[d] = new_path[d], new_path[c], new_path[b], new_path[a]
-        return self.two_opt(new_path)
+        return new_path
             
     def calculate_path_cost(self, path):
         n = len(self.nodes)
@@ -138,7 +142,7 @@ class TSP:
                         break
                     if self.should_swap_edges(cur_path[i - 1], cur_path[i], cur_path[j - 1], cur_path[j]):
                         best_path_found = True
-                        cur_path[i], cur_path[j - 1]= cur_path[j-1], cur_path[i]
+                        cur_path[i], cur_path[j - 1] = cur_path[j-1], cur_path[i]
         cost = self.calculate_path_cost(cur_path)
         return (cur_path, cost)
     
