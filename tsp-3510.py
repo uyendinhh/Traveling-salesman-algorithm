@@ -30,7 +30,7 @@ class TSP:
         unvisited_neighbors = range(0, n)
         visited_neighbors = [start_node]
         
-        # sort the distance matrix and keep their index
+        # sort the distance matrix
         sorted_cost_matrix = []
         for i in range(n):
             sorted_distance = np.argsort(self.node_distances[i]) 
@@ -81,8 +81,8 @@ class TSP:
         initial_path = self.generate_initial_path()
         best_path, best_cost = self.two_opt(initial_path)
  
-        # If the algorithm finished its job before timeout, try to improve the current path
-        # by randomly swapped two edges, if it lessen the cost, process with that path
+        # If the algorithm finishes its job before timeout, try to improve the current path
+        # by randomly swapping two edges, if it lessens the cost, process with that path
         while time.time() < self.timeout:
             swapped_edges_path = self.path_after_swapping_edges(best_path)
             better_path, better_cost = self.two_opt(swapped_edges_path)
